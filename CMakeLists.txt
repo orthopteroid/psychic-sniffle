@@ -1,0 +1,33 @@
+cmake_minimum_required(VERSION 3.6)
+project(psychicsniffle)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules")
+include(GetCPUDetails)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+	target_compile_definitions(psychicsniffle PRIVATE "-DDEBUG")
+else()
+	target_compile_options(psychicsniffle PRIVATE "-O3")
+
+	find_package(OpenMP)
+	if(OPENMP_FOUND)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	endif()
+
+	get_cpu_details()
+	if(CPU_HAS_SSE4)
+		target_compile_options(psychicsniffle PRIVATE "-msse4")
+	elseif(CPU_HAS_SSSE3)
+		target_compile_options(psychicsniffle PRIVATE "-mssse3")
+	elseif(CPU_HAS_SSE3)
+		target_compile_options(psychicsniffle PRIVATE "-msse3")
+	endif()
+endif()
+
+set(SOURCE_FILES main.cpp)
+add_executable(psychicsniffle ${SOURCE_FILES})
+

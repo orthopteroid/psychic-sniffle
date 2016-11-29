@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" buildAllGenerated="true">
+    <generated>
+      <config projectName="psychicsniffle" targetName="psychicsniffle" />
+      <config projectName="psychic-sniffle" targetName="psychic-sniffle" />
+    </generated>
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="true">
+    <configurations>
+      <configuration CONFIG_NAME="Debug" GENERATION_OPTIONS="-Dfoo=bar" />
+      <configuration CONFIG_NAME="Release" GENERATION_OPTIONS="-Dfoo=bar" />
+      <configuration CONFIG_NAME="MinSizeRel" GENERATION_OPTIONS="-Dfoo=bar" />
+      <configuration CONFIG_NAME="RelWithDebInfo" GENERATION_OPTIONS="-Dfoo=bar" />
+    </configurations>
+  </component>
+
+  <component name="RunManager" selected="Application.Debug">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="psychicsniffle" TARGET_NAME="psychicsniffle" CONFIG_NAME="Release">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="Debug" CONFIG_NAME="Debug" type="CMakeRunConfiguration" factoryName="Application" WORKING_DIR="" PASS_PARENT_ENVS_2="true" PROJECT_NAME="psychicsniffle" TARGET_NAME="psychicsniffle" RUN_TARGET_PROJECT_NAME="psychicsniffle" RUN_TARGET_NAME="psychicsniffle">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="Release" CONFIG_NAME="Release"  type="CMakeRunConfiguration" factoryName="Application" WORKING_DIR="" PASS_PARENT_ENVS_2="true" PROJECT_NAME="psychicsniffle" TARGET_NAME="psychicsniffle" RUN_TARGET_PROJECT_NAME="psychicsniffle" RUN_TARGET_NAME="psychicsniffle">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="MinSizeRel" CONFIG_NAME="MinSizeRel" type="CMakeRunConfiguration" factoryName="Application" WORKING_DIR="" PASS_PARENT_ENVS_2="true" PROJECT_NAME="psychicsniffle" TARGET_NAME="psychicsniffle" RUN_TARGET_PROJECT_NAME="psychicsniffle" RUN_TARGET_NAME="psychicsniffle">
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="false" name="RelWithDebInfo" CONFIG_NAME="RelWithDebInfo" type="CMakeRunConfiguration" factoryName="Application" WORKING_DIR="" PASS_PARENT_ENVS_2="true" PROJECT_NAME="psychicsniffle" TARGET_NAME="psychicsniffle" RUN_TARGET_PROJECT_NAME="psychicsniffle" RUN_TARGET_NAME="psychicsniffle">
+      <envs />
+      <method />
+    </configuration>
+    <list size="4">
+      <item index="0" class="java.lang.String" itemvalue="Application.Debug" />
+      <item index="1" class="java.lang.String" itemvalue="Application.Release" />
+      <item index="2" class="java.lang.String" itemvalue="Application.MinSizeRel" />
+      <item index="3" class="java.lang.String" itemvalue="Application.RelWithDebInfo" />
+    </list>
+  </component>
+
+</project>
