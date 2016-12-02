@@ -98,7 +98,10 @@ struct ByteAnalyser {
     }
 
     void reset() {
-        memset(distr, UINT8_MAX >> 2, StateSize * 256); // uniform byteAnalyser to start
+        // The value used here to initialize the distribution may have an effect
+        // on the convergence rate. A higher value will require more attenuation
+        // cycles before the S/R ratio get stronger.
+        memset(distr, UINT8_MAX >> 2, StateSize * 256); // a uniform distribution
     }
 
     void mutatebyte(uint8_t *p, int byte, uint32_t randValue) {

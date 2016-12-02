@@ -1,6 +1,6 @@
 # psychic-sniffle
 
-A minimalistic but many featured genetic algorithm (maximizer) designed specifically to make use of phenotype-bytes' expected-values. The idea was to track and manipulate these distributions in order to control saturation and test distribution-related termination conditions. 
+A minimalistic but many featured genetic algorithm (maximizer) designed specifically to make use of phenotype-bytes' expected-values. The idea was to track and manipulate these distributions in order to control saturation and test distribution-related termination conditions (like signal/noise ratio).
  
  This GA seems to give OK performance. It is small and should be easy to follow and hack on. It's got:
 * <300 lines of open-mp friendly code,
