@@ -9,14 +9,22 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BU
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	target_compile_definitions(psychicsniffle PRIVATE "-DDEBUG")
 else()
-	target_compile_options(psychicsniffle PRIVATE "-O3")
-
 	find_package(OpenMP)
 	if(OPENMP_FOUND)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 	endif()
+endif()
+
+set(SOURCE_FILES taus88.h sniffle.h schwefel.h main.cpp)
+add_executable(psychicsniffle ${SOURCE_FILES})
+
+if(CMAKE_BUILD_TYPE STREQUAL Debug)
+	target_compile_definitions(psychicsniffle PRIVATE "-DDEBUG")
+
+	target_compile_options(psychicsniffle PRIVATE "-g")
+else()
+	target_compile_options(psychicsniffle PRIVATE "-O3")
 
 	get_cpu_details()
 	if(CPU_HAS_SSE4)
@@ -27,7 +35,3 @@ else()
 		target_compile_options(psychicsniffle PRIVATE "-msse3")
 	endif()
 endif()
-
-set(SOURCE_FILES main.cpp)
-add_executable(psychicsniffle ${SOURCE_FILES})
-
