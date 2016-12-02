@@ -45,7 +45,7 @@ void splice(uint8_t *out, uint8_t *a, uint8_t *b, uint uSize, uint uBit) {
 
     int i = 0;
     while (i < (uBit / 8)) out[i++] = a[i];
-    out[i++] = (a[i] & u8Mask[uBit & 7]) | (b[i] & ~u8Mask[uBit & 7]);
+    out[i++] = (a[i] & ~u8Mask[uBit & 7]) | (b[i] & u8Mask[uBit & 7]);
     while (i < uSize) out[i++] = b[i];
 }
 
