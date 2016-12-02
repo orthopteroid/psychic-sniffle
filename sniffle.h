@@ -5,11 +5,6 @@
 //
 // Genetic Algorithim Maximizer
 // Uses sampling from discrete 'breathing' byte-distributions for noise-generation and jump-mutation.
-// Population broken into 4 parts:
-// - best single candidate so far
-// - group of almost best, mutated using byte-distribution tables
-// - group of favourable, spliced with other high expected value candidates
-// - random noise generated from byte-distribution tables
 //
 // Created by orthopteroid on 30/11/16.
 // kudos to Andrew Schwartzmeyer
