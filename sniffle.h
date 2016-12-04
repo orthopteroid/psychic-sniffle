@@ -120,9 +120,13 @@ template<typename StateType, uint Population>
 struct Maximizer {
     const static int StateSize = sizeof(StateType);
 
-    const static int Offset_Elite = Population / 4;
+    const static int Group2End = Population * .30;
+    const static int Group3End = Population * .50;
+    const static int Group4End = Population * .70;
+    const static int Group5End = Population * .80;
+    const static int Group6End = Population * .90;
 
-    const static int EliteSamples = 5 + Offset_Elite * StateSize / 200; // /200 is .5% mark
+    const static int EliteSamples = 5 + Group3End * .05;
     int eliteSamples[EliteSamples];
 
     int pa, pb;
@@ -199,7 +203,7 @@ struct Maximizer {
 #pragma omp parallel for
             for (int i = 1; i < EliteSamples; i++)
                 eliteSamples[i] =
-                        sample(eSum1, Offset_Elite - 1, taus88()) + 1; // note: eSum1 doesn't account for item 0
+                        sample(eSum1, Group3End - 1, taus88()) + 1; // note: eSum1 doesn't account for item 0
         }
 
         // refresh distributions
@@ -218,39 +222,42 @@ struct Maximizer {
         {
             Taus88 taus88(taus88State);
 #pragma omp parallel for
-            for (int i = 1; i < Population; i++) {
+            for (int i = 1; i < Group2End; i++) {
+                // g2: preserve elites
+                int p = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
+                memcpy(newPop(i), oldPop(p), (uint) StateSize);
+            }
+#pragma omp parallel for
+            for (int i = Group2End +1; i < Group3End; i++) {
+                // g3: semi-preserve elites
+                int p = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
+                memcpy(newPop(i), oldPop(p), (uint) StateSize);
+                byteAnalyser.mutatebyte(newPop(i), taus88() % StateSize, taus88());
+            }
+#pragma omp parallel for
+            for (int i = Group3End +1; i < Group4End; i++) {
+                // g4: some favourables are spliced with best
+                int b = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
+                splice(newPop(i), oldPop(0), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
+            }
+#pragma omp parallel for
+            for (int i = Group4End +1; i < Group5End; i++) {
+                // g5: some favourables are spliced with best (other way)
+                int a = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
+                splice(newPop(i), oldPop(a), oldPop(0), (uint) StateSize, (uint) taus88() % (8 * StateSize));
+            }
+#pragma omp parallel for
+            for (int i = Group5End +1; i < Group6End; i++) {
+                // g6: favourables that are only spliced
+                int a = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
+                int b = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
+                splice(newPop(i), oldPop(a), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
+            }
+#pragma omp parallel for
+            for (int i = Group6End +1; i < Population; i++) {
+                // g7: randomize rest using byteAnalyser
                 std::function<uint32_t()> fRand = [&taus88]() -> uint32_t { return taus88.operator()(); };
-
-                if (i < Offset_Elite * 0.95) // TODO: fix as Population * frac
-                {
-                    // preserve elites
-                    int p = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
-                    memcpy(newPop(i), oldPop(p), (uint) StateSize);
-                } else if (i < Offset_Elite) // TODO: fix as Population * frac
-                {
-                    // semi-preserve elites
-                    int p = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
-                    memcpy(newPop(i), oldPop(p), (uint) StateSize);
-                    byteAnalyser.mutatebyte(newPop(i), taus88() % StateSize, taus88());
-                } else if (i < Population * 0.50) {
-                    // some favourables are spliced with best
-                    int a = 0;
-                    int b = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
-                    splice(newPop(i), oldPop(a), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
-                } else if (i < Population * 0.75) {
-                    // some favourables are spliced with best
-                    int a = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
-                    int b = 0;
-                    splice(newPop(i), oldPop(a), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
-                } else if (i < Population * 0.95) {
-                    // favourables that are only spliced
-                    int a = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
-                    int b = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
-                    splice(newPop(i), oldPop(a), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
-                } else {
-                    // randomize rest using byteAnalyser
-                    byteAnalyser.randomize(newPop(i), fRand);
-                }
+                byteAnalyser.randomize(newPop(i), fRand);
             }
         }
 
