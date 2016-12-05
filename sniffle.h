@@ -74,13 +74,13 @@ struct ByteAnalyser {
 #endif
 
         // attenuate - BREATHE OUT
-#pragma omp for
+#pragma omp parallel for
         for (int ss = 0; ss < StateSize; ss++)
             for (int b = 0; b < 256; b++)
                 if (distr[ss][b] > 1) distr[ss][b] -= 1;
 
         // amplify by sampling from the elite group - BREATHE IN
-#pragma omp for
+#pragma omp parallel for
         for (int i = 0; i < eliteSamples; i++) {
             for (int ss = 0; ss < StateSize; ss++) {
                 int b = GetByteArr(stateArr[eliteArr[i]])[ss];
@@ -92,7 +92,7 @@ struct ByteAnalyser {
         }
 
         // recalc
-#pragma omp for
+#pragma omp parallel for
         for (int ss = 0; ss < StateSize; ss++)
             accumulate(&(dSum[ss][0]), &(distr[ss][0]), 256);
     }
@@ -170,7 +170,7 @@ struct Maximizer {
 #pragma omp parallel
         {
             Taus88 taus88(taus88State);
-#pragma omp parallel for
+#pragma omp for
             for (int i = 0; i < Population; i++) {
                 std::function<uint32_t()> fRand = [&taus88]() -> uint32_t { return taus88.operator()(); };
 
@@ -200,7 +200,7 @@ struct Maximizer {
 #pragma omp parallel
         {
             Taus88 taus88(taus88State);
-#pragma omp parallel for
+#pragma omp for
             for (int i = 1; i < EliteSamples; i++)
                 eliteSamples[i] =
                         sample(eSum1, Group3End - 1, taus88()) + 1; // note: eSum1 doesn't account for item 0
@@ -221,39 +221,39 @@ struct Maximizer {
 #pragma omp parallel
         {
             Taus88 taus88(taus88State);
-#pragma omp parallel for
+#pragma omp for nowait
             for (int i = 1; i < Group2End; i++) {
                 // g2: preserve elites
                 int p = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
                 memcpy(newPop(i), oldPop(p), (uint) StateSize);
             }
-#pragma omp parallel for
+#pragma omp for nowait
             for (int i = Group2End +1; i < Group3End; i++) {
                 // g3: semi-preserve elites
                 int p = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
                 memcpy(newPop(i), oldPop(p), (uint) StateSize);
                 byteAnalyser.mutatebyte(newPop(i), taus88() % StateSize, taus88());
             }
-#pragma omp parallel for
+#pragma omp for nowait
             for (int i = Group3End +1; i < Group4End; i++) {
                 // g4: some favourables are spliced with best
                 int b = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
                 splice(newPop(i), oldPop(0), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
             }
-#pragma omp parallel for
+#pragma omp for nowait
             for (int i = Group4End +1; i < Group5End; i++) {
                 // g5: some favourables are spliced with best (other way)
                 int a = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
                 splice(newPop(i), oldPop(a), oldPop(0), (uint) StateSize, (uint) taus88() % (8 * StateSize));
             }
-#pragma omp parallel for
+#pragma omp for nowait
             for (int i = Group5End +1; i < Group6End; i++) {
                 // g6: favourables that are only spliced
                 int a = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
                 int b = sample(eSum1, Population - 1, taus88()) + 1; // +1 to skip item 0 and avoid saturation
                 splice(newPop(i), oldPop(a), oldPop(b), (uint) StateSize, (uint) taus88() % (8 * StateSize));
             }
-#pragma omp parallel for
+#pragma omp for nowait
             for (int i = Group6End +1; i < Population; i++) {
                 // g7: randomize rest using byteAnalyser
                 std::function<uint32_t()> fRand = [&taus88]() -> uint32_t { return taus88.operator()(); };

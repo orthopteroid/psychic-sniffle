@@ -75,7 +75,7 @@ struct Taus88State
     Taus88State()
     {
         int m = ompMaxThreads();
-        block = new uint32_t[m*4];
+        block = new uint32_t[m*m*4];
     }
     virtual ~Taus88State()
     {
