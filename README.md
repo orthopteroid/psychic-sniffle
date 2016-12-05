@@ -24,4 +24,4 @@ Populations are double-buffered and partitioned into 7 groups, not necessarily o
 Categories 2 & 3 are considered 'elite' in that they are picked from groups 2-7 of the previous generation. Overall, the weighted selection process only includes groups 2-7, group 1 (the maximally-best) is never included in order to avoid saturation.
 
 Current problems solved with this GA include:
-* The Schwefel Function, over [-500,+500]. A 16-bit fixed-point 20 dimensional Schwefel, with a population of 400, can be solved in 168 iterations (so, 240000 evaluations).
+* The Schwefel Function, over [-500,+500]. A 16-bit fixed-point 20 dimensional Schwefel, with a population of 400, can be solved in 168 iterations (so, 240000 evaluations). State-of-the-art (2016) is about 40000 evaluations (reference?).
