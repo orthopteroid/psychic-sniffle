@@ -12,7 +12,7 @@ A minimalistic but many featured genetic algorithm (maximizer) designed specific
   2. perform 'jumping mutation' on phenotype-bytes
   3. construct random phenotypes using weighted high-value phenotype-bytes 
 
-Populations are double-buffered and partitioned into 7 groups, not necessarily of equal size. Each new population is built from the previous generation through the sequential assembly of the 7 groups:
+Populations are double-buffered and partitioned into 7 groups, not necessarily of equal size. Each new population is built from the previous generation through the sequential assembly of the 7 groups (the reason for all this silliness with groups is just to reduce indeterminate branching in the code so that I can keep the cache and the pipeline on my old machine happy):
  1. picking the maximally-best,
  2. weighted selection of highest value
  3. weighted selection of highest value with phenotype-byte jump mutations
