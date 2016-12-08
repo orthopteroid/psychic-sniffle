@@ -13,7 +13,7 @@ int main()
 {
     srand(int(time(NULL)));
 
-    Schwefel<uint16_t, 5, 400>::Solve(10);
+    Schwefel<uint16_t, 20, 400>::Solve(10);
 
     return 0;
 }

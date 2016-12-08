@@ -52,7 +52,7 @@ struct Schwefel
 
             if( t == 10000 || best != f[0] || best > 0.f ) {
                 best = f[0];
-                if( t == 10000 || best > (float_t)(Dimension-1) ) { // terminate when +ve or when we hit 10k iterations
+                if( t == 10000 || best > 0. ) { // terminate when +ve or when we hit 10k iterations
                     //solver.byteAnalyser.dumpStats(); // enable this to see internal stats
                     printf("%u, %8.4f, ", t, best);
                     for( int d=0; d<Dimension; d++ ) {
