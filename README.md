@@ -12,7 +12,7 @@ A minimalistic but many featured genetic algorithm (maximizer) designed specific
   2. perform 'jumping mutation' on phenotype-bytes
   3. construct random phenotypes using weighted high-value phenotype-bytes 
 
-Populations are double-buffered and partitioned into 7 groups, not necessarily of equal size. Each new population is built from the previous generation through the sequential assembly of the 7 groups:
+Populations are double-buffered and partitioned into 7 groups, not necessarily of equal size. Each new population is built from the previous generation through the sequential assembly of the 7 groups (the reason for all this silliness with groups is just to reduce indeterminate branching in the code so that I can keep the cache and the pipeline on my old machine happy):
  1. picking the maximally-best,
  2. weighted selection of highest value
  3. weighted selection of highest value with phenotype-byte jump mutations
@@ -24,4 +24,4 @@ Populations are double-buffered and partitioned into 7 groups, not necessarily o
 Categories 2 & 3 are considered 'elite' in that they are picked from groups 2-7 of the previous generation. Overall, the weighted selection process only includes groups 2-7, group 1 (the maximally-best) is never included in order to avoid saturation.
 
 Current problems solved with this GA include:
-* The Schwefel Function, over [-500,+500]. A 16-bit fixed-point 20 dimensional Schwefel, with a population of 400, can be solved in 168 iterations (so, 240000 evaluations).
+* The Schwefel Function, over [-500,+500]. A 16-bit fixed-point 20 dimensional Schwefel, with a population of 400, can be solved in 168 iterations (so, 240000 evaluations). State-of-the-art (2016) is about 40000 evaluations (reference?).
