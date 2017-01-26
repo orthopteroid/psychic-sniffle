@@ -22,6 +22,31 @@
 
 namespace sniffle {
 
+// performs random selections, without replacement
+template<uint M>
+struct NSelector
+{
+    uint N;
+    uint n[M];
+    uint selected;
+
+    NSelector(uint N) {
+        this->N = N;
+        for( int i=0; i<M; i++) n[i] = i;
+        selected = 0;
+    }
+
+    void reset() { selected = 0; }
+
+    uint select(Taus88 &fnRand)
+    {
+        uint a = fnRand() % (N - selected);
+        std::swap(n[a], n[ N - 1 - selected ]);
+        selected++;
+        return a;
+    }
+};
+
 // Performs a normalization and a prefix sum on the input array.
 // Input and output arrays can use mismatched numeric types.
 template<typename OT, uint ON, typename IT, uint IN>
@@ -45,7 +70,7 @@ int buildSamplerTable(OT* outArr, IT* inArr)
         return IN;
     }
 
-    // pick a scaling coef such that output outArr is filled
+    // select a scaling coef such that output outArr is filled
     float_t coef = (float)(ON -1) / sum;
 
     // otherwise return a nonuniform distribution
@@ -144,12 +169,12 @@ struct ByteAnalyser {
         }
     }
 
-    void mutatebyte(uint8_t *p, std::function<uint32_t()> fnRand) {
+    void mutatebyte(uint8_t *p, Taus88& fnRand) {
         int byte = fnRand() % StateSize;
         p[byte] = dSampler[byte][ fnRand() % dSamplerN[byte] ];
     }
 
-    void randomize(uint8_t *p, std::function<uint32_t()> fnRand) {
+    void randomize(uint8_t *p, Taus88& fnRand) {
         for (int ss = 0; ss < StateSize; ss++) {
             p[ss] = dSampler[ss][ fnRand() % dSamplerN[ss] ];
         }
@@ -213,9 +238,7 @@ struct Maximizer {
             Taus88 taus88(taus88State);
 #pragma omp for
             for (int i = 0; i < Population; i++) {
-                std::function<uint32_t()> fRand = [&taus88]() -> uint32_t { return taus88.operator()(); };
-
-                byteAnalyser.randomize(oldPop(i), fRand);
+                byteAnalyser.randomize(oldPop(i), taus88);
             }
         }
     }
@@ -260,6 +283,8 @@ struct Maximizer {
 #pragma omp parallel
         {
             Taus88 taus88(taus88State);
+            NSelector<65535> nselector( eSamplerN );
+
 #pragma omp for nowait
             for (int i = 1; i < Group2End; i++) {
                 // g2: preserve elites
@@ -271,8 +296,7 @@ struct Maximizer {
                 // g3: semi-preserve elites
                 int p = eSampler[ taus88() % eSamplerN ];
                 memcpy(newPop(i), oldPop(p), (uint) StateSize);
-                std::function<uint32_t()> fRand = [&taus88]() -> uint32_t { return taus88.operator()(); };
-                byteAnalyser.mutatebyte(newPop(i), fRand);
+                byteAnalyser.mutatebyte(newPop(i), taus88);
             }
 #pragma omp for nowait
             for (int i = Group3End +1; i < Group4End; i++) {
@@ -288,16 +312,16 @@ struct Maximizer {
             }
 #pragma omp for nowait
             for (int i = Group5End +1; i < Group6End; i++) {
+                nselector.reset();
                 // g6: favourables that are only spliced
-                int a = eSampler[ taus88() % eSamplerN ];
-                int b = eSampler[ taus88() % eSamplerN ];
+                int a = eSampler[ nselector.select(taus88) ];
+                int b = eSampler[ nselector.select(taus88) ];
                 splice<StateSize>(newPop(i), oldPop(a), oldPop(b), (uint) taus88());
             }
 #pragma omp for nowait
             for (int i = Group6End +1; i < Population; i++) {
                 // g7: randomize rest using byteAnalyser
-                std::function<uint32_t()> fRand = [&taus88]() -> uint32_t { return taus88.operator()(); };
-                byteAnalyser.randomize(newPop(i), fRand);
+                byteAnalyser.randomize(newPop(i), taus88);
             }
         }
 
