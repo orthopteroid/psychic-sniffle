@@ -8,10 +8,10 @@ get_cpu_details()
 
 find_package(OpenMP)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/build/${CMAKE_BUILD_TYPE}")
+include_directories(inc)
+file(GLOB SOURCES "src/*.cpp")
 
-set(SOURCE_FILES taus88.h sniffle.h schwefel.h main.cpp)
-add_executable(psychicsniffle ${SOURCE_FILES})
+add_executable(psychicsniffle ${SOURCES})
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
