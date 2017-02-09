@@ -21,6 +21,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 	target_compile_options(psychicsniffle PRIVATE "-g")
 else()
 	target_compile_options(psychicsniffle PRIVATE "-O3")
+	target_compile_options(psychicsniffle PRIVATE "-mtune=native")
 
 	if(OPENMP_FOUND)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")

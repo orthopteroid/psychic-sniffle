@@ -23,6 +23,7 @@
 namespace sniffle {
 
 // performs random selections, without replacement
+// uses a small exclude-list to hopefully increase cache-line usage
 template<uint M>
 struct NSelector
 {
@@ -32,7 +33,6 @@ struct NSelector
 
     NSelector(uint N) {
         this->N = N;
-        for( int i=0; i<M; i++) n[i] = i;
         selected = 0;
     }
 
@@ -40,9 +40,15 @@ struct NSelector
 
     uint select(Taus88 &fnRand)
     {
+        if(selected == M)
+            throw new std::runtime_error("too many selections");
+
         uint a = fnRand() % (N - selected);
-        std::swap(n[a], n[ N - 1 - selected ]);
-        selected++;
+        for(int i=0; i<selected; i++)
+        {
+            if(a == n[i]) a = (a + 1) % (N - selected); // skip over holes
+        }
+        n[selected++] = a;
         return a;
     }
 };
@@ -283,7 +289,7 @@ struct Maximizer {
 #pragma omp parallel
         {
             Taus88 taus88(taus88State);
-            NSelector<65535> nselector( eSamplerN );
+            NSelector<2> nselector( eSamplerN );
 
 #pragma omp for nowait
             for (int i = 1; i < Group2End; i++) {
