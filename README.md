@@ -24,4 +24,17 @@ Populations are double-buffered and partitioned into 7 groups, not necessarily o
 Categories 2 & 3 are considered 'elite' in that they are picked from groups 2-7 of the previous generation. Overall, the weighted selection process only includes groups 2-7, group 1 (the maximally-best) is never included in order to avoid saturation.
 
 Current problems solved with this GA include:
-* The Schwefel Function, over [-500,+500]. A 16-bit fixed-point 20 dimensional Schwefel, with a population of 400, can be solved in 168 iterations (so, 240000 evaluations). State-of-the-art (2016) is about 40000 evaluations (reference?).
+* The Schwefel Function, over [-500,+500]. A 16-bit fixed-point 20 dimensional Schwefel, with
+ a population of 400, can be solved in 168 iterations (so, 240000 evaluations). State-of-the-art
+  (2016) is about 40000 evaluations (reference?).
+
+* A 12 timestep, 2 Plant, 3 Unit hydropower nonlinear optimization problem. The plant reservoirs and tailwater
+ curves are assumed to be linear but the unit performance curves are interpolated from a sampling-point
+ cloud over the surface of a real unit performance curve (http://encyclopedia2.thefreedictionary.com/Hydroturbine
+ (fig 6)). Some of the implementation tricks include: polygons to represent feasible and roughzone regions,
+ 64 discretization levels for power at each head, generate vs spin mode (for ancillary benifits: ie hz support).
+  The objective function is an as-hoc mishmash of things polluted with weighting coefficients (ah well);
+   1. efficiency is maximized,
+   2. deviation from demand is minimzed,
+   3. start-stops are minimized,
+   4. roughzone operations are minimzed.
