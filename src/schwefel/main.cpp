@@ -1,13 +1,7 @@
-//
-// Created by orthopteroid on 02/12/16.
-//
-
 #include <iostream>
 #include <cstring>
 
-#include "sniffle.h"
-
-#include "schwefel.h"
+#include "schwefel/schwefel.h"
 
 int main()
 {
