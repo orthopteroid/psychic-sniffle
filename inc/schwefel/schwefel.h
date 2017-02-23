@@ -1,9 +1,8 @@
+// copyright 2016 john howard (orthopteroid@gmail.com)
+// MIT license
+
 #ifndef PSYCHICSNIFFLE_SCHWEFEL_H
 #define PSYCHICSNIFFLE_SCHWEFEL_H
-
-//
-// Created by orthopteroid on 02/12/16.
-//
 
 #include <iostream>
 #include <cmath>

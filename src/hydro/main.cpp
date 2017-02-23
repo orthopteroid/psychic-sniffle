@@ -1,3 +1,6 @@
+// copyright 2016 john howard (orthopteroid@gmail.com)
+// MIT license
+
 #include <iostream>
 #include <cstring>
 
@@ -229,44 +232,6 @@ float Simulate(RiverStepArr<StepCount> &steps, RiverOpArr<StepCount> &ops)
 
 ///////////////////////
 
-struct TimerSignaller
-{
-    timer_t timer;
-    TimerSignaller( uint msec, uint signo, uint extra )
-    {
-        struct sigevent sigev;
-        sigev.sigev_notify = SIGEV_SIGNAL;
-        sigev.sigev_signo = signo;
-        sigev.sigev_value.sival_int = extra;
-        if (timer_create(CLOCK_REALTIME, &sigev, &timer) != 0)
-        {
-            perror("timer_create error!");
-        }
-
-        struct itimerspec itval;
-        itval.it_value.tv_sec = 1;
-        itval.it_value.tv_nsec = 0;//1000000000;// msec * 1000000L;
-        itval.it_interval.tv_sec = itval.it_value.tv_sec;
-        itval.it_interval.tv_nsec = itval.it_value.tv_nsec;
-        if (timer_settime(timer, 0, &itval, 0) != 0)
-        {
-            perror("time_settime error!");
-        }
-    }
-    ~TimerSignaller()
-    {
-        struct itimerspec itval;
-        itval.it_value.tv_sec = 0;
-        itval.it_value.tv_nsec = 0;
-        itval.it_interval.tv_sec = itval.it_value.tv_sec;
-        itval.it_interval.tv_nsec = itval.it_value.tv_nsec;
-        timer_settime(timer, 0, &itval, 0);
-        timer_delete(timer);
-    }
-};
-
-///////////////////////
-
 const uint Steps = 12;
 const uint Population = 500;
 
@@ -286,9 +251,6 @@ int main()
     sigact.sa_flags = 0;
     sigact.sa_sigaction = sig_handler;
     sigaction(SIGINT, &sigact, nullptr);
-
-    sigaction(SIGUSR1, &sigact, nullptr);
-    //TimerSignaller timerSignaller( 500, SIGUSR1, 42 ); // borked
 
     printf("multireservoir hydro operations\n");
 
@@ -372,6 +334,7 @@ int main()
             if( terminate ) break;
         }
 
+        // this kicks the solver to occasionally flatten the distributions in the hopes that we can get over local maximia
         //if( iter > 1 && !(iter % 100) ) solver.byteAnalyser.reset();
 
         solver.crank(f);

@@ -1,23 +1,11 @@
+// copyright 2016 john howard (orthopteroid@gmail.com)
+// MIT license
+//
+// Homebrew OpenMP threadsafe Tausme88 PRNG
+// http://www.iro.umontreal.ca/~lecuyer/myftp/papers/tausme.ps
+
 #ifndef PSYCHICSNIFFLE_TAUS88_H
 #define PSYCHICSNIFFLE_TAUS88_H
-
-/*
-
-Homebrew OpenMP threadsafe Tausme88 PRNG
-* safe for single thread non-omp code too! *
-
-http://www.iro.umontreal.ca/~lecuyer/myftp/papers/tausme.ps
-
-Created by orthopteroid on 30/11/16.
-
-//////////////////
-
-// Initialize like the following:
-Taus88State taus88State; // declare omp state
-srand(int(time(NULL))); // seed the single-thread state
-taus88State.seed(); // seed the omp state from the single-thread state
-
-*/
 
 #include <omp.h>
 
@@ -28,7 +16,7 @@ namespace sniffle {
 Taus88State taus88State; // declare omp state
 srand(int(time(NULL))); // seed the single-thread state
 taus88State.seed(); // seed the omp state from the single-thread state
- */
+*/
 struct Taus88State
 {
     uint32_t *block = 0;

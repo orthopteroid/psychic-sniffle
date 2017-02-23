@@ -1,3 +1,6 @@
+// copyright 2016 john howard (orthopteroid@gmail.com)
+// MIT license
+
 #include <cmath>
 
 namespace hydro {

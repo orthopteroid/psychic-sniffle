@@ -1,3 +1,6 @@
+// copyright 2016 john howard (orthopteroid@gmail.com)
+// MIT license
+
 #ifndef PSYCHICSNIFFLE_HYDRO_MATH_H
 #define PSYCHICSNIFFLE_HYDRO_MATH_H
 

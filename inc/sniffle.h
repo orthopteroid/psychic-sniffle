@@ -1,13 +1,13 @@
-
-#ifndef PSYCHICSNIFFLE_SNIFFLE_H
-#define PSYCHICSNIFFLE_SNIFFLE_H
-
+// copyright 2016 john howard (orthopteroid@gmail.com)
+// MIT license
 //
 // Genetic Algorithim Maximizer
 // Uses sampling from discrete 'breathing' byte-distributions for noise-generation and jump-mutation.
 //
-// Created by orthopteroid on 30/11/16.
-// kudos to Andrew Schwartzmeyer
+// kudos to Andrew Schwartzmeyer for the jump mutation insight
+
+#ifndef PSYCHICSNIFFLE_SNIFFLE_H
+#define PSYCHICSNIFFLE_SNIFFLE_H
 
 #include <iostream>
 #include <cmath>
