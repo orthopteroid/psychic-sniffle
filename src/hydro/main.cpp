@@ -222,6 +222,7 @@ float Simulate(RiverStepArr<StepCount> &steps, RiverOpArr<StepCount> &ops)
 
     // objective function...
     return
+// not necessary?
 //        (1e6f - volPosDevUpper) + (1e6f - volPosDevLower) + // minimize start-to-end pool volume deviation
         (1e6f - powDev) + // minimize deviation from demand
         1e3f * statEff.avg() + // maximize efficiency

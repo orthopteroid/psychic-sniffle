@@ -70,6 +70,10 @@ float CalcInterpolate( const float *chart, float Qp, float Qh );
 // http://geomalgorithms.com/a03-_inclusion.html
 bool CalcContains( const float* poly, float Qp, float Qh );
 
+// for the given polygon and x,y value return the min x (left edge) and delta x (span) at the y value.
+// the purpose of this alg is to provide an x-span that can be discreteized by the number of FRACBITS in a UnitOp.
+// (the x value is not necessary to pass in as an arg as it is encoded as the first value of the poly)
+// it may be possible to improve the alg to avoid the use of an x value at all.
 void CalcSpan( float& min, float& span, float* poly, float head );
 
 }

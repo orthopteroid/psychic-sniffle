@@ -13,6 +13,10 @@
 
 namespace hydro {
 
+/**
+
+ */
+
 //////////////////
 // basics of operating units
 
@@ -143,21 +147,22 @@ struct UnitStep
             }
             case StateType::SPIN:
             {
-                // no P or E. Q is spin Q. A is ancillary benefit.
+                // no P or E. Q is spin Q.
                 m_AvgP = m_AvgE = 0.f;
                 m_AvgQ = fSpinQ;
                 break;
             }
             case StateType::GENERATE:
             {
-                // P is calculated form the frac of the op
+                // P is calculated from the frac of the op
                 float pmin, pspan;
                 CalcSpan( pmin, pspan, pFeasZone, fHead );
                 if( pmin * pspan < 1.f )
                 {
-                    throw new runtime_error("damn. can't think of a meaningful thing to say.");
+                    throw new runtime_error("Operation outside of feasible region for unit. Extreme head?");
                 }
-                m_AvgP = pmin + pspan * op.getFrac(); // using new span and new P
+                // an improvement here might be to have getFrac specify segment midpoints
+                m_AvgP = pmin + pspan * op.getFrac();
                 m_AvgE = CalcInterpolate( pUnitPHE, m_AvgP, fHead );
                 m_AvgQ = CalcQ( m_AvgP, m_AvgE, fHead, fPConvCoef );
                 break;
@@ -300,6 +305,9 @@ struct PlantStep
         m_AvgP = adjustor.statP.tot;
         m_AvgE = adjustor.statE.avg();
 
+        // units can provide hz support for the network if they are up to speed (ie in GENERATE or SPIN mode).
+        // accumulate the number of units providing hz support at the plant level as it
+        // could be used in an objective function.
         m_iAncillary = 0;
         for( size_t u = 0; u < UnitCount; u++ )
         {
@@ -307,10 +315,6 @@ struct PlantStep
         }
     }
 };
-
-////////////////
-
-void Test();
 
 }
 
