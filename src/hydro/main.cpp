@@ -15,6 +15,8 @@
 
 #include "sniffle.h"
 
+#include "cpuinfo.h"
+
 #define ENABLE_PAGINATED_OUTPUT
 
 ////////////
@@ -246,6 +248,14 @@ void sig_handler(int sig, siginfo_t * info, void *context)
 int main()
 {
     srand(int(time(NULL)));
+
+#if defined(NDEBUG)
+    {
+        int cores = EnumCores();
+        printf("OpenMP using %d threads\n", cores);
+        omp_set_num_threads(cores);
+    }
+#endif
 
     struct sigaction sigact;
     sigemptyset(&sigact.sa_mask);
