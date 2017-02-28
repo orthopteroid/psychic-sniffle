@@ -130,6 +130,30 @@ struct ByteAnalyser {
         putchar('\n');
     }
 
+    float_t calcSmallestChannelDifference()
+    {
+        uint8_t min[StateSize], max[StateSize];
+
+#pragma omp parallel for
+        for (int ss = 0; ss < StateSize; ss++)
+        {
+            min[ss] = 255;
+            max[ss] = 0;
+            for (int b = 0; b < 256; b++) {
+                min[ss] = std::min(min[ss], distr[ss][b]);
+                max[ss] = std::max(max[ss], distr[ss][b]);
+            }
+        }
+
+        // smallest difference between channels
+        uint8_t deltaE = (uint8_t)~0;
+        for (int s1 = 0; s1 < StateSize; s1++)
+            for (int s2 = 0; s2 < StateSize; s2++)
+                deltaE = std::min(deltaE, (uint8_t)(max[s1] - min[s2]));
+
+        return (float_t)deltaE / 255.f;
+    }
+
     void crank(StateType *stateArr, int *eliteArr, const int eliteSamples) {
 #if 0
         dumpStats();
