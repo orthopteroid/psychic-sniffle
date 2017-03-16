@@ -9,7 +9,7 @@
 
 #include <omp.h>
 
-namespace sniffle {
+namespace util {
 
 /*
 // instance only one of these in the main application thread:

@@ -16,101 +16,16 @@
 #include <functional>
 #include <assert.h>
 
+#include "nselector.h"
+#include "samplertable.h"
+#include "splice.h"
 #include "taus88.h"
 
 //////////////////////////////////
 
+using namespace util;
+
 namespace sniffle {
-
-// performs random selections, without replacement
-// uses a small exclude-list to hopefully increase cache-line usage
-template<uint M>
-struct NSelector
-{
-    uint N;
-    uint n[M];
-    uint selected;
-
-    NSelector(uint N) {
-        this->N = N;
-        selected = 0;
-    }
-
-    void reset() { selected = 0; }
-
-    uint select(Taus88 &fnRand)
-    {
-        if(selected == M)
-            throw new std::runtime_error("too many selections");
-
-        uint a = fnRand() % (N - selected);
-        for(int i=0; i<selected; i++)
-        {
-            if(a == n[i]) a = (a + 1) % (N - selected); // skip over holes
-        }
-        n[selected++] = a;
-        return a;
-    }
-};
-
-// Performs a normalization and a prefix sum on the input array.
-// Input and output arrays can use mismatched numeric types.
-template<typename OT, uint ON, typename IT, uint IN>
-int buildSamplerTable(OT* outArr, IT* inArr)
-{
-    IT min = inArr[0];
-    for(int i=1; i<IN; i++) {
-        min = std::min(min, inArr[i]);
-    }
-
-    // compute area
-    float_t sum = 0;
-    for(int i=0; i<IN; i++) {
-        sum += (inArr[i] - min);
-    }
-
-    // when all equal, return a uniform distr
-    if (sum == 0) {
-        for(int i=0; i<IN; i++)
-            outArr[i] = i;
-        return IN;
-    }
-
-    // select a scaling coef such that output outArr is filled
-    float_t coef = (float)(ON -1) / sum;
-
-    // otherwise return a nonuniform distribution
-    uint i = 0;
-    for (uint j = 0; j < IN; j++) {
-        uint expectedValue = ( (float_t)(inArr[j]) - (float_t)min ) * coef;
-        for (uint k = 0; k < expectedValue; k++)
-            outArr[i++] = j;
-    }
-
-    if (i == 0 || i > ON)
-        throw new std::runtime_error("outArr error");
-
-    return i;
-}
-
-// Splices two byte arrays of the same length together at the specified bit.
-// When splicing, bits from a will be written to lower memory than bits from b.
-// In the transition byte, high bits come from a and high bits come from b. Does it matter?
-template<uint Size>
-void splice(uint8_t *out, uint8_t *a, uint8_t *b, uint uRand) {
-    const uint8_t u8Mask[] = {
-            0b00000000, 0b00000001, 0b00000011, 0b00000111,
-            0b00001111, 0b00011111, 0b00111111, 0b01111111
-    };
-
-    uint uBit = uRand % ( Size * 8 );
-    int i = 0;
-    while (i < (uBit / 8)) out[i++] = a[i];
-    out[i++] = (a[i] & ~u8Mask[uBit & 7]) | (b[i] & u8Mask[uBit & 7]);
-    while (i < Size) out[i++] = b[i];
-}
-
-//////////////////////////////////
 
 template<typename StateType>
 struct ByteAnalyser {
