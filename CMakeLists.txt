@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_HOME_DIRECTORY}/${CMAKE_BUILD_TYPE}")
 
 #######
 
@@ -28,9 +29,9 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG ${RELEASE_CXX_S
 
 #########
 
-file(GLOB COMMON_SRC "src/*.cpp" "inc/*.h")
+file(GLOB COMMON_SRC "src/*.cpp")
 
-include_directories(inc)
+include_directories(src)
 
 add_subdirectory(src/schwefel)
 add_subdirectory(src/hydro)
