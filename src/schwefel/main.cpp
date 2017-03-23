@@ -36,7 +36,7 @@ struct Schwefel
         printf("Minimze Schwefel<%d> : https://www.sfu.ca/~ssurjano/schwef.html\n", Dimension);
 
         float_t f[Population];
-        Maximizer<StateType, Population> solver;
+        Maximizer<StateType, Population, ByteAnalyser> solver;
 
         float_t best = 0.f;
         uint i = 0;

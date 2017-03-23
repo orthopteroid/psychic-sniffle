@@ -215,7 +215,7 @@ float Simulate(RiverStepArr<StepCount> &steps, RiverOpArr<StepCount> &ops)
 
         // tally off-demand production
         float pow = steps[t].upperP.m_AvgP + steps[t].lowerP.m_AvgP;
-        statPow.inc( pow - demand[t] );
+        statPow.incGT( pow - demand[t], 1.f ); // ignore differences below 1.
     }
     float powDev = statPow.pos + statPow.neg;
     float totSS = starts + stops;
@@ -227,7 +227,7 @@ float Simulate(RiverStepArr<StepCount> &steps, RiverOpArr<StepCount> &ops)
 // not necessary?
 //        (1e6f - volPosDevUpper) + (1e6f - volPosDevLower) + // minimize start-to-end pool volume deviation
         (1e6f - powDev) + // minimize deviation from demand
-        1e3f * statEff.avg() + // maximize efficiency
+        1.f * statEff.avg() + // maximize efficiency
         (1e3f - totSS) + // minimize total starts and stops
         (1e3f - roughZone) // minimize roughzone operation
     ;
@@ -249,12 +249,10 @@ int main()
 {
     srand(int(time(NULL)));
 
+    int cores = 0;
 #if defined(NDEBUG)
-    {
-        int cores = EnumCores();
-        printf("OpenMP using %d threads\n", cores);
-        omp_set_num_threads(cores);
-    }
+    cores = EnumCores();
+    omp_set_num_threads(cores);
 #endif
 
     struct sigaction sigact;
@@ -263,10 +261,8 @@ int main()
     sigact.sa_sigaction = sig_handler;
     sigaction(SIGINT, &sigact, nullptr);
 
-    printf("multireservoir hydro operations\n");
-
     // the solver's decision variables are "unit operations" for both reservoirs over the timescale
-    Maximizer<RiverOpArr<Steps>, Population> solver;
+    Maximizer<RiverOpArr<Steps>, Population, ByteAnalyser> solver;
 
     // we perform simulations for all the solver's selected unit operations.
     // this is working storage for those simulations.
@@ -306,6 +302,7 @@ int main()
 
 #if defined(ENABLE_PAGINATED_OUTPUT)
             printf("\033c");
+            printf("multireservoir hydro operations (%d threads)\n", cores);
 #endif
 
             const char cUnitState[] = {'_','d','g','s','G','S'};
@@ -345,8 +342,8 @@ int main()
             if( terminate ) break;
         }
 
-        // this kicks the solver to occasionally flatten the distributions in the hopes that we can get over local maximia
-        //if( iter > 1 && !(iter % 100) ) solver.byteAnalyser.reset();
+        // local-maxima strategy: occasionally flatten byte distributions
+        if( iter > 1 && !(iter % 50) ) solver.reset( 1 ); // preserve 1 (best)
 
         solver.crank(f);
         iter++;

@@ -2,9 +2,6 @@
 // MIT license
 //
 // Genetic Algorithim Maximizer
-// Uses sampling from discrete 'breathing' byte-distributions for noise-generation and jump-mutation.
-//
-// kudos to Andrew Schwartzmeyer for the jump mutation insight
 
 #ifndef PSYCHICSNIFFLE_SNIFFLE_H
 #define PSYCHICSNIFFLE_SNIFFLE_H
@@ -27,6 +24,8 @@ using namespace util;
 
 namespace sniffle {
 
+// The byte-analyser constructs distributions of the population's state bytes
+// for byte-level gene selection and jump-mutation.
 template<typename StateType>
 struct ByteAnalyser {
     const static int StateSize = sizeof(StateType);
@@ -86,9 +85,12 @@ struct ByteAnalyser {
             for (int ss = 0; ss < StateSize; ss++) {
                 int b = GetByteArr(stateArr[eliteArr[i]])[ss];
                 if (distr[ss][b] < 250) distr[ss][b] += 5;
+
                 // slightly distribute locality
-                if (b > 0 && distr[ss][b - 1] < 250) distr[ss][b - 1] += 1;
-                if (b < 255 && distr[ss][b + 1] < 250) distr[ss][b + 1] += 1;
+                for( int bo = 1; bo < 4; bo++) {
+                    if (b > 0 && distr[ss][b - bo] < 250) distr[ss][b - bo] += 1;
+                    if (b < 255 && distr[ss][b + bo] < 250) distr[ss][b + bo] += 1;
+                }
             }
         }
 
@@ -116,7 +118,7 @@ struct ByteAnalyser {
 
     void mutatebyte(uint8_t *p, Taus88& fnRand) {
         int byte = fnRand() % StateSize;
-        p[byte] = dSampler[byte][ fnRand() % dSamplerN[byte] ];
+        p[byte] = dSampler[byte][ fnRand() % dSamplerN[byte] ]; // jump mutation - kudos to Andrew Schwartzmeyer
     }
 
     void randomize(uint8_t *p, Taus88& fnRand) {
@@ -128,7 +130,30 @@ struct ByteAnalyser {
 
 //////////////////////////////////
 
-template<typename StateType, uint Population>
+// The null-analyser performs no analysis of the state population.
+template<typename StateType>
+struct NullAnalyser {
+    const static int StateSize = sizeof(StateType);
+
+    void crank(StateType *stateArr, int *eliteArr, const int eliteSamples) { }
+
+    void reset() {}
+
+    void mutatebyte(uint8_t *p, Taus88& fnRand) {
+        int byte = fnRand() % StateSize;
+        p[byte] = fnRand();
+    }
+
+    void randomize(uint8_t *p, Taus88& fnRand) {
+        for (int ss = 0; ss < StateSize; ss++) {
+            p[ss] = fnRand();
+        }
+    }
+};
+
+//////////////////////////////////
+
+template<typename StateType, uint Population, template <typename ST> typename StateAnalyser>
 struct Maximizer {
     const static int StateSize = sizeof(StateType);
 
@@ -149,7 +174,7 @@ struct Maximizer {
     uint16_t eSampler[65535];
     uint16_t eSamplerN;
 
-    ByteAnalyser<StateType> byteAnalyser;
+    StateAnalyser<StateType> stateAnalyser;
     Taus88State taus88State;
 
     uint8_t *GetByteArr(StateType &state) { return (uint8_t *) &state; }
@@ -173,17 +198,17 @@ struct Maximizer {
         putchar('\n');
     }
 
-    void reset() {
+    void reset(int preserve = 0) {
         pa = 0;
         pb = 1;
-        byteAnalyser.reset();
+        stateAnalyser.reset();
 
 #pragma omp parallel
         {
             Taus88 taus88(taus88State);
 #pragma omp for
-            for (int i = 0; i < Population; i++) {
-                byteAnalyser.randomize(oldPop(i), taus88);
+            for (int i = preserve; i < Population; i++) {
+                stateAnalyser.randomize(oldPop(i), taus88);
             }
         }
     }
@@ -217,8 +242,7 @@ struct Maximizer {
                 eliteSamples[i] = eSampler[ taus88() % eSamplerN ];
         }
 
-        // refresh distributions
-        byteAnalyser.crank(GetStateArr(), eliteSamples, EliteSamples);
+        stateAnalyser.crank(GetStateArr(), eliteSamples, EliteSamples);
 
         /////////////////////////////
         // build next generation
@@ -241,7 +265,7 @@ struct Maximizer {
                 // g3: semi-preserve elites
                 int p = eSampler[ taus88() % eSamplerN ];
                 memcpy(newPop(i), oldPop(p), (uint) StateSize);
-                byteAnalyser.mutatebyte(newPop(i), taus88);
+                stateAnalyser.mutatebyte(newPop(i), taus88);
             }
 #pragma omp for nowait
             for (int i = Group3End +1; i < Group4End; i++) {
@@ -266,7 +290,7 @@ struct Maximizer {
 #pragma omp for nowait
             for (int i = Group6End +1; i < Population; i++) {
                 // g7: randomize rest using byteAnalyser
-                byteAnalyser.randomize(newPop(i), taus88);
+                stateAnalyser.randomize(newPop(i), taus88);
             }
         }
 

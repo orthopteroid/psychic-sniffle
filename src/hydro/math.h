@@ -17,6 +17,7 @@ struct StatPosNeg
     StatPosNeg() : pos(0), neg(0) {}
     inline void clear() { pos=neg=0.; }
     inline void inc( float v ) { if( v > 0 ) pos+=v; else neg+=-v; }
+    inline void incGT( float v, const float tol = .01f ) { if( v > 0 ) pos+=(v>tol?v:0.f); else neg+=(v<tol?-v:0); }
 };
 
 struct StatMinMax
