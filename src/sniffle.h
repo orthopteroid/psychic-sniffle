@@ -36,6 +36,10 @@ struct ByteAnalyser {
     uint8_t dSampler[StateSize][65535];
     uint16_t dSamplerN[StateSize];
 
+    // local-maxima strategy: occasionally invert byte distributions
+    int iteration;
+    bool negated;
+
     void dumpStats() {
         for (int ss = 0; ss < StateSize; ss++) {
             for (int b = 0; b < 256; b++) putchar('A' + 25 * (distr[ss][b]) / 255);
@@ -73,23 +77,40 @@ struct ByteAnalyser {
         dumpStats();
 #endif
 
-        // attenuate - BREATHE OUT
-#pragma omp parallel for
-        for (int ss = 0; ss < StateSize; ss++)
-            for (int b = 0; b < 256; b++)
-                if (distr[ss][b] > 1) distr[ss][b] -= 1;
+        if( ++iteration % 10 == 0 ) {
+            negated = true;
 
-        // amplify by sampling from the elite group - BREATHE IN
 #pragma omp parallel for
-        for (int i = 0; i < eliteSamples; i++) {
-            for (int ss = 0; ss < StateSize; ss++) {
-                int b = GetByteArr(stateArr[eliteArr[i]])[ss];
-                if (distr[ss][b] < 250) distr[ss][b] += 5;
+            for (int ss = 0; ss < StateSize; ss++)
+                for (int b = 0; b < 256; b++)
+                    distr[ss][b] = ~distr[ss][b];
+        } else {
+            if( negated ) {
+                negated = !negated;
+#pragma omp parallel for
+                for (int ss = 0; ss < StateSize; ss++)
+                    for (int b = 0; b < 256; b++)
+                        distr[ss][b] = ~distr[ss][b];
+            }
 
-                // slightly distribute locality
-                for( int bo = 1; bo < 4; bo++) {
-                    if (b > 0 && distr[ss][b - bo] < 250) distr[ss][b - bo] += 1;
-                    if (b < 255 && distr[ss][b + bo] < 250) distr[ss][b + bo] += 1;
+            // attenuate - BREATHE OUT
+#pragma omp parallel for
+            for (int ss = 0; ss < StateSize; ss++)
+                for (int b = 0; b < 256; b++)
+                    if (distr[ss][b] > 1) distr[ss][b] -= 1;
+
+            // amplify by sampling from the elite group - BREATHE IN
+#pragma omp parallel for
+            for (int i = 0; i < eliteSamples; i++) {
+                for (int ss = 0; ss < StateSize; ss++) {
+                    int b = GetByteArr(stateArr[eliteArr[i]])[ss];
+                    if (distr[ss][b] < 250) distr[ss][b] += 5;
+
+                    // slightly distribute locality
+                    for (int bo = 1; bo < 4; bo++) {
+                        if (b > 0 && distr[ss][b - bo] < 250) distr[ss][b - bo] += 1;
+                        if (b < 255 && distr[ss][b + bo] < 250) distr[ss][b + bo] += 1;
+                    }
                 }
             }
         }
@@ -103,6 +124,9 @@ struct ByteAnalyser {
     }
 
     void reset() {
+        iteration = 0;
+        negated = false;
+
         // The value used here to initialize the distribution may have an effect
         // on the convergence rate. A higher value will require more attenuation
         // cycles before the S/R ratio get stronger.

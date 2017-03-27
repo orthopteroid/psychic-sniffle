@@ -342,9 +342,6 @@ int main()
             if( terminate ) break;
         }
 
-        // local-maxima strategy: occasionally flatten byte distributions
-        if( iter > 1 && !(iter % 50) ) solver.reset( 1 ); // preserve 1 (best)
-
         solver.crank(f);
         iter++;
 
