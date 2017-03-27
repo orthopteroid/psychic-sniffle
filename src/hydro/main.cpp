@@ -219,18 +219,20 @@ float Simulate(RiverStepArr<StepCount> &steps, RiverOpArr<StepCount> &ops)
     }
     float powDev = statPow.pos + statPow.neg;
     float totSS = starts + stops;
-    float volPosDevUpper = - min( steps[StepCount-1].upperP.m_Vol - initRS.upperP.m_Vol, 0.f ); // no penalty for +ve
-    float volPosDevLower = - min( steps[StepCount-1].lowerP.m_Vol - initRS.lowerP.m_Vol, 0.f ); // no penalty for +ve
 
-    // objective function...
-    return
-// not necessary?
-//        (1e6f - volPosDevUpper) + (1e6f - volPosDevLower) + // minimize start-to-end pool volume deviation
-        (1e6f - powDev) + // minimize deviation from demand
-        1.f * statEff.avg() + // maximize efficiency
-        (1e3f - totSS) + // minimize total starts and stops
-        (1e3f - roughZone) // minimize roughzone operation
+    // objective function contains the main variables to balance
+    float obj =
+        - 4.f * powDev // minimize deviation from demand
+        + 1.f * statEff.avg() // maximize efficiency
+        - 2.f * totSS // minimize total starts and stops
+        - 0.f * roughZone // minimize roughzone operation
     ;
+
+    // constraints reduce the objective to a smaller, but nonzero value.
+    if( steps[StepCount-1].upperP.m_Vol < steps[0].upperP.m_Vol ) return .001f * obj;
+    if( steps[StepCount-1].lowerP.m_Vol < steps[0].lowerP.m_Vol ) return .001f * obj;
+
+    return obj;
 }
 
 ///////////////////////
