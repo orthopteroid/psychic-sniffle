@@ -49,7 +49,7 @@ struct Schwefel
                 f[p] = Eval( solver.GetStateArr()[p] );
 
             if( t == 10000 || best != f[0] ) {
-                float ff = solver.byteAnalyser.calcSmallestChannelDifference();
+                float ff = solver.stateAnalyser.calcSmallestChannelDifference();
                 best = f[0];
                 if( t == 10000 || ff >= .99f ) {
                     printf("%u, %8.4f, %8.4f, [", t, best, ff);
