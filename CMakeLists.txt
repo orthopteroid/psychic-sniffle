@@ -35,3 +35,4 @@ include_directories(src)
 
 add_subdirectory(src/schwefel)
 add_subdirectory(src/hydro)
+add_subdirectory(src/quadratic)
